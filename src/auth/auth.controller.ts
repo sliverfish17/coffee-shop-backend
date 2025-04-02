@@ -7,7 +7,11 @@ export class AuthController {
     const { username, password } = body;
 
     if (username === 'admin' && password === 'admin123') {
-      return { success: true, role: 'admin' }; // Mocked Login and Password
+      return { success: true, role: 'admin' };
+    }
+
+    if (username === 'cashier' && password === 'cashier123') {
+      return { success: true, role: 'cashier' };
     }
 
     throw new UnauthorizedException('Невірний логін або пароль');
