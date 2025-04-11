@@ -1,25 +1,24 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Transaction } from './transaction.interface';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateTransactionDto } from './create-transaction.dto';
 
 @Injectable()
 export class TransactionService {
-  constructor(
-    @InjectModel('Transaction') private readonly model: Model<Transaction>,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  async create(dto: CreateTransactionDto) {
-    const created = new this.model(dto);
-    return created.save();
+  create(dto: CreateTransactionDto) {
+    return this.prisma.transaction.create({
+      data: dto,
+    });
   }
 
-  async findAll() {
-    return this.model.find().exec();
+  findAll() {
+    return this.prisma.transaction.findMany();
   }
 
-  async createMany(dto: CreateTransactionDto[]): Promise<Transaction[]> {
-    return this.model.insertMany(dto);
+  createMany(dto: CreateTransactionDto[]) {
+    return this.prisma.transaction.createMany({
+      data: dto,
+    });
   }
 }

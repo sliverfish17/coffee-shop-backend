@@ -1,75 +1,69 @@
 import {
   Controller,
-  Get,
   Post,
   Body,
-  Param,
-  Put,
   UploadedFile,
   UseInterceptors,
+  Get,
+  Param,
+  Put,
+  Delete,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './create-product.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import * as path from 'path';
-import { v4 as uuidv4 } from 'uuid';
-
+import { extname } from 'path';
 @Controller('products')
-export class ProductsController {
+export class ProductController {
   constructor(private readonly productService: ProductService) {}
-
-  @Get()
-  async findAll() {
-    return this.productService.findAll();
-  }
-
-  @Get(':code')
-  async findByCode(@Param('code') code: string) {
-    return this.productService.findByCode(code);
-  }
 
   @Post()
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({
-        destination: './uploads/products',
+        destination: './uploads',
         filename: (req, file, cb) => {
-          const ext = path.extname(file.originalname);
-          cb(null, `${uuidv4()}${ext}`);
+          const uniqueSuffix =
+            Date.now() + '-' + Math.round(Math.random() * 1e9);
+          cb(null, uniqueSuffix + extname(file.originalname));
         },
       }),
     }),
   )
-  async create(
-    @Body() data: CreateProductDto,
+  create(
     @UploadedFile() file: Express.Multer.File,
+    @Body() body: CreateProductDto,
   ) {
-    const imageUrl = file ? `/uploads/products/${file.filename}` : '';
-    return this.productService.create({ ...data, imageUrl });
+    console.log('FILE:', file);
+    console.log('BODY:', body);
+
+    return this.productService.create({
+      name: body.name,
+      price: Number(body.price),
+      description: body.description,
+      code: body.code,
+      imageUrl: file?.filename ? `/uploads/${file.filename}` : undefined,
+    });
+  }
+
+  @Get()
+  findAll() {
+    return this.productService.findAll();
+  }
+
+  @Get(':code')
+  findOne(@Param('code') code: string) {
+    return this.productService.findByCode(code);
   }
 
   @Put(':code')
-  @UseInterceptors(
-    FileInterceptor('image', {
-      storage: diskStorage({
-        destination: './uploads/products',
-        filename: (req, file, cb) => {
-          const ext = path.extname(file.originalname);
-          cb(null, `${uuidv4()}${ext}`);
-        },
-      }),
-    }),
-  )
-  async update(
-    @Param('code') code: string,
-    @Body() data: Partial<CreateProductDto>,
-    @UploadedFile() file?: Express.Multer.File,
-  ) {
-    const imageUrl = file ? `/uploads/products/${file.filename}` : undefined;
-    return this.productService.updateByCode(code, {
-      ...data,
-      ...(imageUrl ? { imageUrl } : {}),
-    });
+  update(@Param('code') code: string, @Body() body: CreateProductDto) {
+    return this.productService.updateByCode(code, body);
+  }
+
+  @Delete(':code')
+  remove(@Param('code') code: string) {
+    return this.productService.removeByCode(code);
   }
 }

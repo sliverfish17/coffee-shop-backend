@@ -1,42 +1,44 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateCashierDto } from './create-cashier.dto';
-import { Cashier } from './cashier.interface';
 
 @Injectable()
 export class CashierService {
-  constructor(
-    @InjectModel('Cashier') private readonly cashierModel: Model<Cashier>,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  async create(data: CreateCashierDto) {
-    const cashier = new this.cashierModel(data);
-    return cashier.save();
+  findAll() {
+    return this.prisma.cashier.findMany();
   }
 
-  async findAll() {
-    return this.cashierModel.find().exec();
+  create(data: CreateCashierDto) {
+    return this.prisma.cashier.create({
+      data: {
+        code: String(data.code),
+        lastName: data.lastName,
+        firstName: data.firstName,
+        middleName: data.middleName,
+        address: data.address,
+        phone: data.phone,
+      },
+    });
   }
 
-  async update(id: string, data: Cashier) {
-    return this.cashierModel.findByIdAndUpdate(id, data, { new: true });
+  findByCode(code: string) {
+    return this.prisma.cashier.findUnique({
+      where: { code },
+    });
   }
 
-  async findByCode(code: string): Promise<Cashier | null> {
-    return this.cashierModel.findOne({ code }).exec();
+  updateByCode(code: string, data: CreateCashierDto) {
+    return this.prisma.cashier.update({
+      where: { code },
+      data,
+    });
   }
 
-  async updateByCode(
-    code: string,
-    data: Partial<Cashier>,
-  ): Promise<Cashier | null> {
-    return this.cashierModel
-      .findOneAndUpdate({ code }, data, { new: true })
-      .exec();
-  }
-
-  async delete(id: string) {
-    return this.cashierModel.findByIdAndDelete(id);
+  delete(id: number) {
+    return this.prisma.cashier.delete({
+      where: { id },
+    });
   }
 }

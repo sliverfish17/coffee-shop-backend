@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
+import { ConfigModule } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { MulterModule } from '@nestjs/platform-express';
 import { join } from 'path';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CashierModule } from './cashier/cashier.module';
 import { AuthController } from './auth/auth.controller';
-import { ProductsModule } from './product/product.module';
+import { ProductModule } from './product/product.module';
 import { TransactionModule } from './transactions/transaction.module';
 
 @Module({
@@ -17,15 +17,14 @@ import { TransactionModule } from './transactions/transaction.module';
       rootPath: join(__dirname, '..', 'uploads'),
       serveRoot: '/uploads',
     }),
-    ConfigModule.forRoot({ isGlobal: true }),
-    MongooseModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        uri: config.get<string>('MONGODB_URI'),
-      }),
+
+    MulterModule.register({
+      dest: './uploads',
     }),
+
+    ConfigModule.forRoot({ isGlobal: true }),
     CashierModule,
-    ProductsModule,
+    ProductModule,
     TransactionModule,
   ],
   controllers: [AppController, AuthController],

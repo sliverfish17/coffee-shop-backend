@@ -1,31 +1,49 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Product } from './product.interface';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './create-product.dto';
 
 @Injectable()
 export class ProductService {
-  constructor(
-    @InjectModel('Product') private readonly productModel: Model<Product>,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  async create(data: CreateProductDto) {
-    const created = new this.productModel(data);
-    return await created.save();
+  create(data: CreateProductDto) {
+    return this.prisma.product.create({
+      data,
+    });
   }
 
-  async findAll() {
-    return this.productModel.find().exec();
+  findAll() {
+    return this.prisma.product.findMany();
   }
 
-  async findByCode(code: string) {
-    return this.productModel.findOne({ code }).exec();
+  findOne(id: number) {
+    return this.prisma.product.findUnique({ where: { id } });
   }
 
-  async updateByCode(code: string, data: Partial<Product>) {
-    return this.productModel
-      .findOneAndUpdate({ code }, data, { new: true })
-      .exec();
+  update(id: number, dto: CreateProductDto) {
+    return this.prisma.product.update({ where: { id }, data: dto });
+  }
+
+  findByCode(code: string) {
+    return this.prisma.product.findUnique({
+      where: { code },
+    });
+  }
+
+  updateByCode(code: string, data: CreateProductDto) {
+    return this.prisma.product.update({
+      where: { code },
+      data,
+    });
+  }
+
+  removeByCode(code: string) {
+    return this.prisma.product.delete({
+      where: { code },
+    });
+  }
+
+  remove(id: number) {
+    return this.prisma.product.delete({ where: { id } });
   }
 }

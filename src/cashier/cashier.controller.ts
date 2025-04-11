@@ -1,11 +1,11 @@
 import {
   Controller,
+  Get,
   Post,
   Body,
-  Get,
   Param,
-  Put,
   Delete,
+  Put,
 } from '@nestjs/common';
 import { CashierService } from './cashier.service';
 import { CreateCashierDto } from './create-cashier.dto';
@@ -13,6 +13,11 @@ import { CreateCashierDto } from './create-cashier.dto';
 @Controller('cashiers')
 export class CashierController {
   constructor(private readonly cashierService: CashierService) {}
+
+  @Get()
+  findAll() {
+    return this.cashierService.findAll();
+  }
 
   @Post()
   create(@Body() body: CreateCashierDto) {
@@ -25,17 +30,12 @@ export class CashierController {
   }
 
   @Put(':code')
-  update(@Param('code') code: string, @Body() body: CreateCashierDto) {
+  updateByCode(@Param('code') code: string, @Body() body: CreateCashierDto) {
     return this.cashierService.updateByCode(code, body);
-  }
-
-  @Get()
-  findAll() {
-    return this.cashierService.findAll();
   }
 
   @Delete(':id')
   delete(@Param('id') id: string) {
-    return this.cashierService.delete(id);
+    return this.cashierService.delete(+id);
   }
 }
