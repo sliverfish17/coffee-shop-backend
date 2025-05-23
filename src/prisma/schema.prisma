@@ -8,13 +8,15 @@ datasource db {
 }
 
 model Transaction {
-  id              Int     @id @default(autoincrement())
+  id              Int       @id @default(autoincrement())
   transactionCode String
   productName     String
   quantity        Int
   price           Float
   date            String
-  createdAt       DateTime @default(now())
+  createdAt       DateTime  @default(now())
+  cashierId Int?
+  cashier   Cashier? @relation(fields: [cashierId], references: [id])
 }
 
 model Product {
@@ -27,16 +29,15 @@ model Product {
   createdAt   DateTime @default(now())
 }
 
-
 model Cashier {
-  id         Int      @id @default(autoincrement())
-  code       String   @unique
+  id         Int          @id @default(autoincrement())
+  code       String       @unique
   lastName   String
   firstName  String
   middleName String
   address    String
   phone      String
-  createdAt  DateTime @default(now())
+  createdAt  DateTime     @default(now())
+  transactions Transaction[]
 }
-
 

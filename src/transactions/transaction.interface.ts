@@ -4,4 +4,5 @@ export interface Transaction {
   quantity: number;
   price: number;
   date: string;
+  cashierId: number;
 }

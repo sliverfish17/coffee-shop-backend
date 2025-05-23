@@ -1,4 +1,4 @@
-import { IsString, IsNumber } from 'class-validator';
+import { IsInt, IsString, IsNumber } from 'class-validator';
 
 export class CreateTransactionDto {
   @IsString()
@@ -7,11 +7,14 @@ export class CreateTransactionDto {
   @IsString()
   productName!: string;
 
-  @IsNumber()
+  @IsInt()
   quantity!: number;
 
   @IsNumber()
   price!: number;
+
+  @IsInt()
+  cashierId!: number;
 
   @IsString()
   date!: string;

@@ -13,12 +13,33 @@ export class TransactionService {
   }
 
   findAll() {
-    return this.prisma.transaction.findMany();
+    return this.prisma.transaction.findMany({
+      include: {
+        cashier: true,
+      },
+    });
   }
 
   createMany(dto: CreateTransactionDto[]) {
-    return this.prisma.transaction.createMany({
-      data: dto,
-    });
+    return Promise.all(
+      dto.map((data) => {
+        if (!data.cashierId) {
+          throw new Error('Missing cashierId in transaction payload');
+        }
+
+        return this.prisma.transaction.create({
+          data: {
+            transactionCode: data.transactionCode,
+            productName: data.productName,
+            quantity: data.quantity,
+            price: data.price,
+            date: data.date,
+            cashier: {
+              connect: { id: data.cashierId },
+            },
+          },
+        });
+      }),
+    );
   }
 }
